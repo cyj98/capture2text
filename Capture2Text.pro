@@ -148,13 +148,14 @@ HEADERS  += \
 #LIBS += -luser32
 
 macx: {
-    INCLUDEPATH += -L /usr/local/Cellar/tesseract/4.0.0/include/tesseract
-    INCLUDEPATH += -L /usr/local/Cellar/leptonica/1.77.0_1/include/leptonica
-    DEPENDPATH += -L /usr/local/Cellar/tesseract/4.0.0/include/tesseract
-    DEPENDPATH += -L /usr/local/Cellar/leptonica/1.77.0_1/include/leptonica
+    LIBS += -L /usr/local/Cellar/tesseract/4.1.1/lib/ -ltesseract.4
+#    LIBS += -L /usr/local/Cellar/leptonica/1.79.0/lib/ -llept.5
+    LIBS += -L$$PWD/../../../../../../usr/local/Cellar/leptonica/1.79.0/lib/ -llept.5
 
-    LIBS += -L /usr/local/Cellar/tesseract/4.0.0/lib/ -ltesseract.4
-    LIBS += -L$$PWD/../../../../../../usr/local/Cellar/leptonica/1.77.0_1/lib/ -llept.5
+    INCLUDEPATH += -L /usr/local/Cellar/tesseract/4.1.1/include/tesseract
+    INCLUDEPATH += -L /usr/local/Cellar/leptonica/1.79.0/include/leptonica
+    DEPENDPATH += -L /usr/local/Cellar/tesseract/4.1.1/include/tesseract
+    DEPENDPATH += -L /usr/local/Cellar/leptonica/1.79.0/include/leptonica
 }
 
 !console {
@@ -164,5 +165,3 @@ macx: {
 
 # Needed for the icon
 RC_FILE = Capture2Text.rc
-
-FORMS +=

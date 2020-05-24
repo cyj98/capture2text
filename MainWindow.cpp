@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 #include <QMessageBox>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
@@ -27,7 +27,7 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 #include <QKeySequence>
 
 #include "MainWindow.h"
-#include "CaptureBox.h"
+//#include "CaptureBox.h"
 #include "OcrEngine.h"
 #include "PreProcess.h"
 #include "PostProcess.h"
@@ -110,7 +110,7 @@ MainWindow::MainWindow(bool portable)
 
     connect(&translate, &Translate::translationComplete, this, &MainWindow::translationComplete);
 
-    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed);
+    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed, Qt::UniqueConnection);
     registerHotkeys();
 
     captureTimestamp = QDateTime::currentDateTime();
@@ -736,13 +736,11 @@ void MainWindow::settingsAccepted()
 void MainWindow::selectOutputClipboardFromMenu()
 {
     Settings::setOutputClipboard(actionSaveToClipboard->isChecked());
-    qDebug() << Settings::getOutputClipboard();
 }
 
 void MainWindow::selectOutputPopupFromMenu()
 {
     Settings::setOutputShowPopup(actionShowPopupWindow->isChecked());
-    qDebug() << Settings::getOutputClipboard();
 }
 
 void MainWindow::setOcrLang(QString lang)
@@ -759,7 +757,6 @@ void MainWindow::setOcrLang(QString lang)
     }
 
     Settings::setOcrLang(lang);
-    qDebug() << Settings::getOcrLang();
     QtConcurrent::run(ocrEngine, &OcrEngine::setLang, lang);
 }
 
@@ -803,12 +800,14 @@ void MainWindow::captureBoxMoved()
     }
     else if(savedPreviewPos == "Fixed - Bottom Left")
     {
-        pt = QApplication::desktop()->availableGeometry().bottomLeft();
+//        pt = QApplication::desktop()->availableGeometry().bottomLeft();
+        pt = QApplication::screens()[QApplication::desktop()->screenNumber()]->availableGeometry().bottomLeft();
         pt -= QPoint(0, previewBoxHeight);
     }
     else // Fixed - Top Left
     {
-        pt = QApplication::desktop()->availableGeometry().topLeft();
+        pt = QApplication::screens()[QApplication::desktop()->screenNumber()]->availableGeometry().topLeft();
+//        pt = QApplication::desktop()->availableGeometry().topLeft();
     }
 
     previewBox.move(pt);
@@ -880,19 +879,16 @@ void MainWindow::selectLangFromMenu()
 void MainWindow::selectTextOrientationAutoFromMenu()
 {
     Settings::setOcrTextOrientation("Auto");
-    qDebug() << Settings::getOcrTextOrientation();
 }
 
 void MainWindow::selectTextOrientationHorizontalFromMenu()
 {
     Settings::setOcrTextOrientation("Horizontal");
-    qDebug() << Settings::getOcrTextOrientation();
 }
 
 void MainWindow::selectTextOrientationVerticalAutoFromMenu()
 {
     Settings::setOcrTextOrientation("Vertical");
-    qDebug() << Settings::getOcrTextOrientation();
 }
 
 QString MainWindow::postProcess(QString text, bool forceRemoveLineBreaks)

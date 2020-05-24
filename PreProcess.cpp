@@ -102,7 +102,9 @@ void PreProcess::debugImg(QString filename, PIX *pixs)
     if(debug)
     {
         debugImgCount++;
-        QString file = QString("G:\\Temp\\Temp\\c2t_debug\\%1_%2")
+//        QString file = QString("G:\\Temp\\Temp\\c2t_debug\\%1_%2")
+//                .arg(debugImgCount, 2, 10, QChar('0')).arg(filename);
+        QString file = QString("/Users/chenyongjin/Downloads/tmp/debug/%1_%2")
                 .arg(debugImgCount, 2, 10, QChar('0')).arg(filename);
         QByteArray ba = file.toLocal8Bit();
         pixWriteImpliedFormat(ba.constData(), pixs, 0, 0);
@@ -564,7 +566,8 @@ PIX *PreProcess::extractTextBlock(PIX *pixs, int pt_x, int pt_y, int lookahead, 
 #endif
 
     float pixelAvg = 0.0f;
-    status = pixAverageInRect(binarizeForNegPixs, &negRect, &pixelAvg);
+//    status = pixAverageInRect(binarizeForNegPixs, &negRect, &pixelAvg);
+    status = pixAverageInRect(binarizeForNegPixs, NULL, &negRect, 0, 255, 1, &pixelAvg);
     pixDestroy(&binarizeForNegPixs);
 
     // qDebug() << "Pixel Avg: " << pixelAvg;

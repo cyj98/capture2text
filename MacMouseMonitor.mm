@@ -13,6 +13,7 @@ public:
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *) {
         if (eventType == "mac_generic_NSEvent") {
             NSEvent *event = static_cast<NSEvent *>(message);
+//            qDebug() << event;
             switch ([event type]) {
                 case NSEventTypeLeftMouseDown:
                     emit MouseHook::getInstance().buttonPressed(MouseHook::LEFT_MOUSE_DOWN);
@@ -36,31 +37,29 @@ public:
     }
 };
 
-id monitorId;
-QSharedPointer<QAbstractNativeEventFilter> filter(new MouseEventFilter);
-bool isMonitoring = false;
+id monitorId = nil;
+QSharedPointer<QAbstractNativeEventFilter> MouseMonitor::filter(new MouseEventFilter);
 
 void MouseMonitor::startMonitor() {
-//    QSharedPointer<QAbstractNativeEventFilter> filter = QSharedPointer<QAbstractNativeEventFilter>(new MouseEventFilter);
+    if (monitorId != nil) return;
+
     const int mask =
             NSEventMaskLeftMouseDown |
 //            NSEventMaskLeftMouseUp |
-            NSEventMaskRightMouseDown | NSEventMaskRightMouseUp;
-//            NSEventMaskOtherMouseDown | NSEventMaskOtherMouseUp;
+            NSEventMaskRightMouseDown | NSEventMaskRightMouseUp ;
+//            NSEventMaskOtherMouseDown | NSEventMaskOtherMouseUp |
+//            NSEventMaskAppKitDefined | NSEventMaskSystemDefined;
     // The global monitoring handler is *not* called for events sent to our application
     monitorId = [NSEvent addGlobalMonitorForEventsMatchingMask:mask handler:^(NSEvent* event) {
         filter->nativeEventFilter("NSEvent", event, 0);
     }];
     // We also need to handle events coming to our application
     qApp->installNativeEventFilter(filter.data());
-    isMonitoring = true;
 };
 
 void MouseMonitor::stopMonitor() {
-//    qDebug() << monitorId;
-    if (isMonitoring == true) {
-        isMonitoring = false;
-        [NSEvent removeMonitor:monitorId];
-        qApp->removeNativeEventFilter(filter.data());
-    }
+    if (monitorId == nil) return;
+    [NSEvent removeMonitor:monitorId];
+    monitorId = nil;
+    qApp->removeNativeEventFilter(filter.data());
 };

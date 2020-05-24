@@ -43,7 +43,7 @@ CaptureBox::CaptureBox()
     connect(&autoCaptureTimer, &QTimer::timeout, this, &CaptureBox::autoCaptureTimeout);
     connect(&moveTimer, &QTimer::timeout, this, &CaptureBox::moveTimeout);
 //    connect(&KeyboardHook::getInstance(), &KeyboardHook::keyPressed, this, &CaptureBox::hotkeyPressed);
-    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &CaptureBox::hotkeyPressed);
+    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &CaptureBox::hotkeyPressed, Qt::UniqueConnection);
     connect(&MouseHook::getInstance(), &MouseHook::buttonPressed, this, &CaptureBox::hotkeyPressed);
 }
 
@@ -119,7 +119,6 @@ void CaptureBox::endCaptureMode()
 
 void CaptureBox::hotkeyPressed(int id)
 {
-//    qDebug() << id;
     if(id == MouseHook::LEFT_MOUSE_DOWN)
     {
         emit captured();

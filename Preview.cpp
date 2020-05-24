@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 #include <QApplication>
 #include "Preview.h"
 
@@ -46,8 +46,9 @@ void Preview::showInfo(QString text)
 {
     setText(text);
     QFontMetrics metrics(textFont);
-    QPoint pt = QApplication::desktop()->availableGeometry().bottomRight();
-    pt.setX(pt.x() - metrics.width(previewText) - horizontalPadding);
+    QPoint pt = QGuiApplication::screens()[QApplication::desktop()->screenNumber()]->availableGeometry().bottomRight();
+//    QPoint pt = QApplication::desktop()->availableGeometry().bottomRight();
+    pt.setX(pt.x() - metrics.horizontalAdvance(previewText) - horizontalPadding);
     pt.setY(pt.y() - getBoxHeight());
     move(pt);
     show();
@@ -108,10 +109,12 @@ void Preview::paintEvent(QPaintEvent *)
     QPainter painter(this);
 
     // Fit dialog to text
-    QDesktopWidget desktopWidget;
-    QRect screenRect = desktopWidget.screenGeometry(pos());
+//    QDesktopWidget desktopWidget;
+//    QRect screenRect = desktopWidget.screenGeometry(pos());
+    QRect screenRect = QGuiApplication::screenAt(pos())->geometry();
     QFontMetrics metrics(textFont);
-    int textWidth = qMin(metrics.width(previewText) + horizontalPadding, screenRect.width());
+    int textWidth = qMin(metrics.horizontalAdvance(previewText) + horizontalPadding, screenRect.width());
+//    int textWidth = qMin(metrics.width(previewText) + horizontalPadding, screenRect.width());
     int textHeight = metrics.height() + verticalPadding;
     setFixedSize(textWidth, textHeight);
 

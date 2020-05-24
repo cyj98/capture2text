@@ -261,7 +261,7 @@ BOX BoundingTextRect::getBoundingRect(PIX *pixs, int startX, int startY, bool ve
                                       int lookahead, int lookbehind, int maxSearchDist)
 {
     MyPoint nearestPt = findNearestBlackPixel(pixs, startX, startY, maxSearchDist);
-    BOX rect = { nearestPt.x, nearestPt.y, 0, 0 };
+    BOX rect = { nearestPt.x, nearestPt.y, 0, 0, 1};
     BOX rectLast = rect;
 
     QList<DirDist> listD4;

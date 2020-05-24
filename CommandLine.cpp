@@ -32,11 +32,12 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 #include "PostProcess.h"
 
 CommandLine::CommandLine()
-    : debug(false),
-      debugAppendTimestamp(false),
-      keepLineBreaks(false),
+    :
       outputFilePath(""),
-      outputFormat("${capture}${linebreak}")
+      outputFormat("${capture}${linebreak}"),
+      debug(false),
+      debugAppendTimestamp(false),
+      keepLineBreaks(false)
 {
     ocrEngine = new OcrEngine();
 }

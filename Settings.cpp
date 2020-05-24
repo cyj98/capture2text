@@ -19,9 +19,12 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QTextToSpeech>
 #include <QKeySequence>
+#include <QStandardPaths>
 
 #include "Settings.h"
 #include "PostProcess.h"
+
+QSettings *Settings::settings = new QSettings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + "config.ini", QSettings::IniFormat);
 
 const QColor Settings::defaultCaptureBoxBackgroundColor(0, 128, 255, 60);
 const QColor Settings::defaultCaptureBoxBorderColor(0, 128, 255, 255);
@@ -108,12 +111,12 @@ QList<Replacement> Settings::getOcrReplacementList(QString lang)
         defaultValue = PostProcess::replacementListToStr(defaultJapaneseList);
     }
 
-    return PostProcess::strToReplacementList(QSettings().value("Replacement/" + lang, defaultValue).toString());
+    return PostProcess::strToReplacementList(settings->value("Replacement/" + lang, defaultValue).toString());
 }
 
 void Settings::setOcrReplacementList(QString lang, QList<Replacement> value)
 {
-    QSettings().setValue("Replacement/" + lang, PostProcess::replacementListToStr(value));
+    settings->setValue("Replacement/" + lang, PostProcess::replacementListToStr(value));
 }
 
 QString Settings::getTranslateLang(QString ocrLang)
@@ -125,20 +128,20 @@ QString Settings::getTranslateLang(QString ocrLang)
         defaultValue = "German";
     }
 
-    return QSettings().value("Translate/" + ocrLang, defaultValue).toString();
+    return settings->value("Translate/" + ocrLang, defaultValue).toString();
 }
 
 void Settings::setTranslateLang(QString ocrLang, QString translateLang)
 {
-    QSettings().setValue("Translate/" + ocrLang, translateLang);
+    settings->setValue("Translate/" + ocrLang, translateLang);
 }
 
 void Settings::getSpeechInfo(QString ocrLang, QString &locale, QString &voice, int &rate, int &pitch)
 {
-    locale = QSettings().value("Speech/" + ocrLang + "/Locale", "<Init>").toString();
-    voice = QSettings().value("Speech/" + ocrLang + "/Voice", "<Init>").toString();
-    rate = QSettings().value("Speech/" + ocrLang + "/Rate", defaultSpeechRate).toInt();
-    pitch = QSettings().value("Speech/" + ocrLang + "/Pitch", defaultSpeechPitch).toInt();
+    locale = settings->value("Speech/" + ocrLang + "/Locale", "<Init>").toString();
+    voice = settings->value("Speech/" + ocrLang + "/Voice", "<Init>").toString();
+    rate = settings->value("Speech/" + ocrLang + "/Rate", defaultSpeechRate).toInt();
+    pitch = settings->value("Speech/" + ocrLang + "/Pitch", defaultSpeechPitch).toInt();
 
     if(voice == "<Init>")
     {
@@ -175,10 +178,10 @@ void Settings::getSpeechInfo(QString ocrLang, QString &locale, QString &voice, i
 
 void Settings::setSpeechInfo(QString ocrLang, QString locale, QString voice, int rate, int pitch)
 {
-    QSettings().setValue("Speech/" + ocrLang + "/Locale", locale);
-    QSettings().setValue("Speech/" + ocrLang + "/Voice", voice);
-    QSettings().setValue("Speech/" + ocrLang + "/Rate", rate);
-    QSettings().setValue("Speech/" + ocrLang + "/Pitch", pitch);
+    settings->setValue("Speech/" + ocrLang + "/Locale", locale);
+    settings->setValue("Speech/" + ocrLang + "/Voice", voice);
+    settings->setValue("Speech/" + ocrLang + "/Rate", rate);
+    settings->setValue("Speech/" + ocrLang + "/Pitch", pitch);
 }
 
 QString Settings::separatorToStr(QString separator)
