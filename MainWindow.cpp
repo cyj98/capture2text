@@ -111,7 +111,7 @@ MainWindow::MainWindow(bool portable)
     connect(&translate, &Translate::translationComplete, this, &MainWindow::translationComplete);
 
 //    Qt::UniqueConnection
-    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed);
+    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed, Qt::UniqueConnection);
     registerHotkeys();
 
     captureTimestamp = QDateTime::currentDateTime();

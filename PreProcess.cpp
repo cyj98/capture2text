@@ -242,7 +242,7 @@ PIX *PreProcess::scale(PIX *pixs)
         return nullptr;
     }
 
-    debugImg("scale.png", scaled_pixs);
+//    debugImg("scale.png", scaled_pixs);
 
     return scaled_pixs;
 }
@@ -304,20 +304,19 @@ PIX *PreProcess::binarize(PIX *pixs)
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
 PIX *PreProcess::scaleUnsharpBinarize(PIX *pixs)
 {
-//    PIX *scaled_pixs = nullptr;
+    PIX *scaled_pixs = nullptr;
     PIX *unsharp_pixs = nullptr;
     PIX *binarize_pixs = nullptr;
 
-//    scaled_pixs = scale(pixs);
+    scaled_pixs = scale(pixs);
 
-//    if (scaled_pixs == nullptr)
-//    {
-//        return nullptr;
-//    }
+    if (scaled_pixs == nullptr)
+    {
+        return nullptr;
+    }
 
-    unsharp_pixs = unsharpMask(pixs);
-//    unsharp_pixs = unsharpMask(scaled_pixs);
-//    pixDestroy(&scaled_pixs);
+    unsharp_pixs = unsharpMask(scaled_pixs);
+    pixDestroy(&scaled_pixs);
 
     if (unsharp_pixs == nullptr)
     {
@@ -521,38 +520,39 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
         return nullptr;
     }
 
-    // Binarize for negate determination
-    PIX *binarizeForNegPixs = binarize(pixGray);
+//    // Binarize for negate determination
+//    PIX *binarizeForNegPixs = binarize(pixGray);
 
-    if (binarizeForNegPixs == nullptr)
-    {
-        return nullptr;
-    }
+//    if (binarizeForNegPixs == nullptr)
+//    {
+//        return nullptr;
+//    }
 
-    float pixelAvg = 0.0f;
+//    float pixelAvg = 0.0f;
 
-    // Get the average intensity of the border pixels,
-    // with average of 0.0 being completely white and 1.0 being completely black.
-    // Top, bottom, left, right.
-    pixelAvg  = pixAverageOnLine(binarizeForNegPixs, 0, 0, binarizeForNegPixs->w - 1, 0, 1);
-    pixelAvg += pixAverageOnLine(binarizeForNegPixs, 0, binarizeForNegPixs->h - 1, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
-    pixelAvg += pixAverageOnLine(binarizeForNegPixs, 0, 0, 0, binarizeForNegPixs->h - 1, 1);
-    pixelAvg += pixAverageOnLine(binarizeForNegPixs, binarizeForNegPixs->w - 1, 0, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
-    pixelAvg /= 4.0f;
+//    // Get the average intensity of the border pixels,
+//    // with average of 0.0 being completely white and 1.0 being completely black.
+//    // Top, bottom, left, right.
+//    pixelAvg  = pixAverageOnLine(binarizeForNegPixs, 0, 0, binarizeForNegPixs->w - 1, 0, 1);
+//    pixelAvg += pixAverageOnLine(binarizeForNegPixs, 0, binarizeForNegPixs->h - 1, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
+//    pixelAvg += pixAverageOnLine(binarizeForNegPixs, 0, 0, 0, binarizeForNegPixs->h - 1, 1);
+//    pixelAvg += pixAverageOnLine(binarizeForNegPixs, binarizeForNegPixs->w - 1, 0, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
+//    pixelAvg /= 4.0f;
 
-    pixDestroy(&binarizeForNegPixs);
+//    debugImg("binarizeForNeg.png", binarizeForNegPixs);
+//    pixDestroy(&binarizeForNegPixs);
 
-    // If background is dark
-    if (pixelAvg > darkBgThreshold)
-    {
-        // Negate image (yes, input and output can be the same PIX)
-        pixInvert(pixGray, pixGray);
+//    // If background is dark
+//    if (pixelAvg > darkBgThreshold)
+//    {
+//        // Negate image (yes, input and output can be the same PIX)
+//        pixInvert(pixGray, pixGray);
 
-        if (pixGray == nullptr)
-        {
-            return nullptr;
-        }
-    }
+//        if (pixGray == nullptr)
+//        {
+//            return nullptr;
+//        }
+//    }
 
     // Scale, Unsharp Mask, Binarize
     PIX *pixBinarize = scaleUnsharpBinarize(pixGray);
@@ -563,7 +563,42 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
         return nullptr;
     }
 
-    PIX *denoisePixs = removeNoise(pixBinarize);
+    float pixelAvg = 0.0f;
+
+    // Get the average intensity of the border pixels,
+    // with average of 0.0 being completely white and 1.0 being completely black.
+    // Top, bottom, left, right.
+    pixelAvg  = pixAverageOnLine(pixBinarize, 0, 0, pixBinarize->w - 1, 0, 1);
+    pixelAvg += pixAverageOnLine(pixBinarize, 0, pixBinarize->h - 1, pixBinarize->w - 1, pixBinarize->h - 1, 1);
+    pixelAvg += pixAverageOnLine(pixBinarize, 0, 0, 0, pixBinarize->h - 1, 1);
+    pixelAvg += pixAverageOnLine(pixBinarize, pixBinarize->w - 1, 0, pixBinarize->w - 1, pixBinarize->h - 1, 1);
+    pixelAvg /= 4.0f;
+
+    // If background is dark
+    if (pixelAvg > darkBgThreshold)
+    {
+        // Negate image (yes, input and output can be the same PIX)
+        pixInvert(pixBinarize, pixBinarize);
+
+        if (pixBinarize == nullptr)
+        {
+            return nullptr;
+        }
+    }
+
+    debugImg("invertIfDark.png", pixBinarize);
+
+    PIX *noBorderPixs = pixRemoveBorderConnComps(pixBinarize, 4);
+    pixDestroy(&pixBinarize);
+
+    if (noBorderPixs == nullptr)
+    {
+        debugMsg("pixRemoveBorderConnComps failed!");
+        return nullptr;
+    }
+    debugImg("noBorderPixs.png", noBorderPixs);
+
+    PIX *denoisePixs = removeNoise(noBorderPixs);
     pixDestroy(&pixBinarize);
 
     if (denoisePixs == nullptr)
@@ -700,7 +735,8 @@ PIX *PreProcess::extractTextBlock(PIX *pixs, int pt_x, int pt_y, int lookahead, 
 
     // Remove black pixels connected to the border.
     // This eliminates annoying things like text bubbles in manga.
-    PIX *connCompsPixs = pixRemoveBorderConnComps(binarizePixs, 8);
+//    PIX *connCompsPixs = pixRemoveBorderConnComps(binarizePixs, 8);
+    PIX *connCompsPixs = pixRemoveBorderConnComps(binarizePixs, 4);
 
     if (connCompsPixs == nullptr)
     {

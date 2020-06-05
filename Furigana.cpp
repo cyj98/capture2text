@@ -131,7 +131,7 @@ bool Furigana::eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextL
 
     for(auto span : spanList)
     {
-        qDebug() << "span" << span.end - span.start;
+//        qDebug() << "span" << span.end - span.start;
         spanLengths.append(span.getLength());
     }
 

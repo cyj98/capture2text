@@ -17,6 +17,7 @@ void QHotkeyHook::addHotkey(int id, QKeySequence hotkey)
     auto qhotkey = new QHotkey(hotkey, true, qApp);
     if(hotkeys.contains(id))
     {
+        delete hotkeys[id];
         hotkeys.remove(id);
     }
     connect(qhotkey, &QHotkey::activated, this, [=](){
@@ -50,6 +51,11 @@ void QHotkeyHook::removeHotkey(int id)
 
 void QHotkeyHook::endThread()
 {
+    for(auto id : hotkeys.keys())
+    {
+        delete hotkeys[id];
+//        hotkeys.remove(id);
+    }
     this->disconnect();
     exit(0);
 }
