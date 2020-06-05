@@ -148,15 +148,11 @@ HEADERS  += \
 #LIBS += -luser32
 
 macx: {
-    LIBS += -L /usr/local/Cellar/tesseract/4.1.1/lib/ -ltesseract.4
-#    LIBS += -L /usr/local/Cellar/leptonica/1.79.0/lib/ -llept.5
-    LIBS += -L$$PWD/../../../../../../usr/local/Cellar/leptonica/1.79.0/lib/ -llept.5
-
-    INCLUDEPATH += -L /usr/local/Cellar/tesseract/4.1.1/include/tesseract
-    INCLUDEPATH += -L /usr/local/Cellar/leptonica/1.79.0/include/leptonica
-    DEPENDPATH += -L /usr/local/Cellar/tesseract/4.1.1/include/tesseract
-    DEPENDPATH += -L /usr/local/Cellar/leptonica/1.79.0/include/leptonica
+    PKG_CONFIG = /usr/local/bin/pkg-config
 }
+
+CONFIG += link_pkgconfig
+PKGCONFIG += tesseract opencv4 lept
 
 !console {
     RESOURCES += \
@@ -165,3 +161,4 @@ macx: {
 
 # Needed for the icon
 RC_FILE = Capture2Text.rc
+

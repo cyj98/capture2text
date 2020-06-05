@@ -49,7 +49,6 @@ CaptureBox::CaptureBox()
 
 CaptureBox::~CaptureBox()
 {
-
 }
 
 void CaptureBox::startCaptureMode()
@@ -68,7 +67,6 @@ void CaptureBox::startCaptureMode()
 
     QHotkeyHook::getInstance().addHotkey(CANCEL, Qt::Key_Escape);
     QHotkeyHook::getInstance().addHotkey(CAPTURE, Qt::Key_Return);
-    QHotkeyHook::getInstance().addHotkey(CAPTURE2, Qt::Key_Space);
     QHotkeyHook::getInstance().addHotkey(LEFT, Qt::Key_Left);
     QHotkeyHook::getInstance().addHotkey(RIGHT, Qt::Key_Right);
     QHotkeyHook::getInstance().addHotkey(UP, Qt::Key_Up);
@@ -104,7 +102,6 @@ void CaptureBox::endCaptureMode()
 //    KeyboardHook::getInstance().removeHotkey(DOWN);
     QHotkeyHook::getInstance().removeHotkey(CANCEL);
     QHotkeyHook::getInstance().removeHotkey(CAPTURE);
-    QHotkeyHook::getInstance().removeHotkey(CAPTURE2);
     QHotkeyHook::getInstance().removeHotkey(LEFT);
     QHotkeyHook::getInstance().removeHotkey(RIGHT);
     QHotkeyHook::getInstance().removeHotkey(UP);
@@ -133,10 +130,6 @@ void CaptureBox::hotkeyPressed(int id)
         emit cancel();
     }
     else if(id == CAPTURE)
-    {
-        emit captured();
-    }
-    else if(id == CAPTURE2)
     {
         emit captured();
     }

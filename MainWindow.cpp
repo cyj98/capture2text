@@ -110,7 +110,8 @@ MainWindow::MainWindow(bool portable)
 
     connect(&translate, &Translate::translationComplete, this, &MainWindow::translationComplete);
 
-    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed, Qt::UniqueConnection);
+//    Qt::UniqueConnection
+    connect(&QHotkeyHook::getInstance(), &QHotkeyHook::keyPressed, this, &MainWindow::hotkeyPressed);
     registerHotkeys();
 
     captureTimestamp = QDateTime::currentDateTime();
@@ -119,6 +120,7 @@ MainWindow::MainWindow(bool portable)
     {
         Settings::setMiscShowWelcome(false);
         welcomeDialog.show();
+        welcomeDialog.raise();
     }
 
     Settings::setMiscVersion(QCoreApplication::applicationVersion());
@@ -511,9 +513,15 @@ void MainWindow::performTextLineCapture(QPoint pt)
     // Get the click point relative to the cropped area
     MyPoint ptInCropRect(pt.x() - cropRect.left(), pt.y() - cropRect.top());
     PIX *inPixs = preProcess.convertImageToPix(image);
+//    PIX *pixs = preProcess.extractTextBlock(inPixs,
+//                                            ptInCropRect.x,
+//                                            ptInCropRect.y,
+//                                            Settings::getTextLineCaptureLookahead(),
+//                                            Settings::getTextLineCaptureLookbehind(),
+//                                            Settings::getTextLineCaptureSearchRadius());
     PIX *pixs = preProcess.extractTextBlock(inPixs,
-                                            ptInCropRect.x,
-                                            ptInCropRect.y,
+                                            ptInCropRect.x * 2,
+                                            ptInCropRect.y * 2,
                                             Settings::getTextLineCaptureLookahead(),
                                             Settings::getTextLineCaptureLookbehind(),
                                             Settings::getTextLineCaptureSearchRadius());
@@ -588,7 +596,7 @@ void MainWindow::performBubbleCapture(QPoint pt)
     cropRect.setRight(qMin(totalScreenWidth, pt.x() + idealRectHalfWidth));
     cropRect.setBottom(qMin(screenRect.height(), pt.y() + idealRectHalfHeight));
 
-    QImage image = UtilsImg::takeScreenshot(cropRect);
+    QImage image = UtilsImg::takeScreenshot(cropRect);;
 
     if(image.isNull())
     {
@@ -614,7 +622,8 @@ void MainWindow::performBubbleCapture(QPoint pt)
 
     MyPoint ptInCropRect(pt.x() - cropRect.left(), pt.y() - cropRect.top());
     PIX *inPixs = preProcess.convertImageToPix(image);
-    PIX *pixs = preProcess.extractBubbleText(inPixs, ptInCropRect.x, ptInCropRect.y);
+    PIX *pixs = preProcess.extractBubbleText(inPixs, ptInCropRect.x * 2, ptInCropRect.y * 2);
+//    PIX *pixs = preProcess.extractBubbleText(inPixs, ptInCropRect.x, ptInCropRect.y);
     pixDestroy(&inPixs);
 
     if(pixs == nullptr)
@@ -671,6 +680,7 @@ void MainWindow::showDocumentation()
 void MainWindow::showAbout()
 {
     aboutDialog.show();
+    aboutDialog.raise();
 }
 
 void MainWindow::showSettingsDialog()
@@ -1120,10 +1130,6 @@ void MainWindow::createTrayMenu()
 {
     menuTrayIcon = new QMenu(this);
 
-//    QAction *startCaptureSettings = menuTrayIcon->addAction(tr("&Start capture"));
-//    actionSettings->setIcon(QIcon(":/img/img/Settings.png"));
-//    connect(startCaptureSettings, &QAction::triggered, this, &MainWindow::startCaptureBox);
-
     //
     // Settings
     //
@@ -1251,5 +1257,3 @@ void MainWindow::createTrayMenu()
     trayIcon->setContextMenu(menuTrayIcon);
     trayIcon->show();
 }
-
-

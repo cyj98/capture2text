@@ -63,6 +63,7 @@ const QString Settings::defaultOcrTesseractConfigFile("");
 const QString Settings::defaultOcrWhitelist("");
 const QString Settings::defaultOcrBlacklist("");
 const double Settings::defaultOcrScaleFactor(3.5);
+//const double Settings::defaultOcrScaleFactor(1.);
 
 const QString Settings::defaultOutputLogFile("");
 const QString Settings::defaultOutputLogFormat("${capture}${linebreak}");

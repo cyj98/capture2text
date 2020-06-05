@@ -57,16 +57,6 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="6">
-    <widget class="QPlainTextEdit" name="plainTextEditOcrText">
-     <property name="font">
-      <font>
-       <family>Arial</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="5">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="sizePolicy">
@@ -110,6 +100,16 @@
     <widget class="QPushButton" name="pushButtonSpeech">
      <property name="text">
       <string>Say</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="6">
+    <widget class="QPlainTextEdit" name="plainTextEditOcrText">
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>12</pointsize>
+      </font>
      </property>
     </widget>
    </item>

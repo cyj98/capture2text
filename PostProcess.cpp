@@ -19,6 +19,7 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QRegularExpression>
 #include "PostProcess.h"
+#include <QDebug>
 
 PostProcess::PostProcess(QString _ocrLang, bool _keepLineBreaks)
     : ocrLang(_ocrLang),
@@ -47,6 +48,13 @@ QString PostProcess::postProcessOcrText(QString text)
     }
 
     text = text.trimmed();
+    text.replace("\n\n", "\n");
+    if(ocrLang == "Japanese"
+            || ocrLang == "Chinese - Simplified"
+            || ocrLang == "Chinese - Traditional")
+    {
+        text.replace(" ", "");
+    }
 
     // Replace nuisance ligatures
     text.replace("ﬁ", "fi");

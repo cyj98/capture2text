@@ -65,11 +65,13 @@ private:
     void debugImg(QString filename, PIX *pixs);
 
 #ifdef QT_DEBUG
-    const bool debug = false;
+//    const bool debug = false;
+    const bool debug = true;
 #endif
 
     // From 0.0 to 1.0, with 0 being all white and 1 being all black
-    const float darkBgThreshold = 0.5f;
+//    const float darkBgThreshold = 0.5f;
+    const float darkBgThreshold = 0.6f;
 
     // Amount to scale input image to meet OCR engine minimum DPI requirements
     float scaleFactor = 3.5f;

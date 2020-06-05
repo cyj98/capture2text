@@ -19,6 +19,8 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QGuiApplication>
 #include <QPixmap>
+#include <QDebug>
+#include <QWidget>
 #include <QScreen>
 #include "UtilsCommon.h"
 #include "UtilsImg.h"
@@ -33,7 +35,8 @@ QImage UtilsImg::takeScreenshot(const QRect &rect)
         return QImage();
     }
 
-    QPixmap capturePixmap = screen->grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height());
+    // use width() - 1 and height() - 1 to remove black line on previewbox
+    QPixmap capturePixmap = screen->grabWindow(0, rect.x(), rect.y(), rect.width() - 1, rect.height() - 1);
 
     return capturePixmap.toImage();
 }

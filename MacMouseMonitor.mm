@@ -11,9 +11,8 @@ class MouseEventFilter : public QAbstractNativeEventFilter
 {
 public:
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *) {
-        if (eventType == "mac_generic_NSEvent") {
+        if (eventType == "mac_generic_NSEvent" || eventType == "NSEvent") {
             NSEvent *event = static_cast<NSEvent *>(message);
-//            qDebug() << event;
             switch ([event type]) {
                 case NSEventTypeLeftMouseDown:
                     emit MouseHook::getInstance().buttonPressed(MouseHook::LEFT_MOUSE_DOWN);

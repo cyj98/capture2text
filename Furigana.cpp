@@ -22,8 +22,9 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 #include "Furigana.h"
 #include "PreProcessCommon.h"
 
+const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 3.0f;
 //const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 2.0f;
-const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 1.0f;
+//const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 1.0f;
 const float Furigana::FURIGANA_MIN_WIDTH = 5.0f;
 
 Furigana::Furigana()
@@ -71,6 +72,7 @@ bool Furigana::eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextL
                 // If this line has already meet the minimum number of fg pixels, stop scanning it
                 if (numFgPixelsOnLine >= minFgPixPerLine)
                 {
+
                     goodLine = LEPT_TRUE;
                     break;
                 }
@@ -129,7 +131,8 @@ bool Furigana::eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextL
 
     for(auto span : spanList)
     {
-      spanLengths.append(span.getLength());
+        qDebug() << "span" << span.end - span.start;
+        spanLengths.append(span.getLength());
     }
 
 //    qSort(spanLengths);
@@ -280,10 +283,11 @@ bool Furigana::eraseFuriganaHorizontal(PIX *pixs, float scaleFactor, int *numTex
     // Get mean width of the largest 50% of spans
     QList<double> spanLengths;
 
-    for(auto span : spanList)
-    {
-      spanLengths.append(span.getLength());
-    }
+//    for(auto span : spanList)
+//    {
+//        qDebug() << "span"<< span.start << span.end;
+//        spanLengths.append(span.getLength());
+//    }
 
 //    qSort(spanLengths);
     std::sort(spanLengths.begin(),spanLengths.end());
@@ -347,7 +351,7 @@ bool Furigana::eraseAreaLeftToRight(PIX *pixs, int x, int width)
     box.x = x;
     box.y = 0;
     box.w = width;
-    box.h = pixs->h;
+    box.h = pixs->h - 1;
 
     status = pixClearInRect(pixs, &box);
 

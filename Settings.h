@@ -147,11 +147,13 @@ public:
     static double getOcrScaleFactor() { return settings->value("OCR/ScaleFactor", defaultOcrScaleFactor).toDouble(); }
     static void setOcrScaleFactor(double value) { settings->setValue("OCR/ScaleFactor", value); }
 
-    static const bool defaultOcrTrim = false;
+//    static const bool defaultOcrTrim = false;
+    static const bool defaultOcrTrim = true;
     static bool getOcrTrim() { return settings->value("OCR/Trim", defaultOcrTrim).toBool(); }
     static void setOcrTrim(bool value) { settings->setValue("OCR/Trim", value); }
 
-    static const bool defaultOcrDeskew = false;
+//    static const bool defaultOcrDeskew = false;
+    static const bool defaultOcrDeskew = true;
     static bool getOcrDeskew() { return settings->value("OCR/Deskew", defaultOcrDeskew).toBool(); }
     static void setOcrDeskew(bool value) { settings->setValue("OCR/Deskew", value); }
 
@@ -203,11 +205,13 @@ public:
     static bool getForwardTextLineCaptureFirstWord() { return settings->value("ForwardTextLineCapture/FirstWord", defaultForwardTextLineCaptureFirstWord).toBool(); }
     static void setForwardTextLineCaptureFirstWord(bool value) { settings->setValue("ForwardTextLineCapture/FirstWord", value); }
 
-    static const int defaultBubbleCaptureWidth = 500;
+//    static const int defaultBubbleCaptureWidth = 500;
+    static const int defaultBubbleCaptureWidth = 250;
     static int getBubbleCaptureWidth() { return settings->value("BubbleCapture/Width", defaultBubbleCaptureWidth).toInt(); }
     static void setBubbleCaptureWidth(int value) { settings->setValue("BubbleCapture/Width", value); }
 
-    static const int defaultBubbleCaptureHeight = 500;
+//    static const int defaultBubbleCaptureHeight = 500;
+    static const int defaultBubbleCaptureHeight = 250;
     static int getBubbleCaptureHeight() { return settings->value("BubbleCapture/Height", defaultBubbleCaptureHeight).toInt(); }
     static void setBubbleCaptureHeight(int value) { settings->setValue("BubbleCapture/Height", value); }
 

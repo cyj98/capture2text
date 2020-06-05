@@ -20,6 +20,7 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 #include <QBuffer>
 #include <QDebug>
 #include <QtGlobal>
+#include "opencv2/opencv.hpp"
 #include "PreProcess.h"
 #include "BoundingTextRect.h"
 #include "Furigana.h"
@@ -30,6 +31,53 @@ PreProcess::PreProcess()
 {
 
 }
+
+Pix *mat8ToPix(cv::Mat *mat8)
+{
+    Pix *pixd = pixCreate(mat8->size().width, mat8->size().height, 8);
+    for(int y=0; y<mat8->rows; y++) {
+        for(int x=0; x<mat8->cols; x++) {
+            pixSetPixel(pixd, x, y, (l_uint32) mat8->at<uchar>(y,x));
+        }
+    }
+    return pixd;
+}
+
+cv::Mat pix8ToMat(Pix *pix8)
+{
+    cv::Mat mat(cv::Size(pix8->w, pix8->h), CV_8UC1);
+    uint32_t *line = pix8->data;
+    for (uint32_t y = 0; y < pix8->h; ++y) {
+        for (uint32_t x = 0; x < pix8->w; ++x) {
+            mat.at<uchar>(y, x) = GET_DATA_BYTE(line, x);
+        }
+        line += pix8->wpl;
+    }
+    return mat;
+}
+
+//std::string type2str(int type) {
+//  std::string r;
+
+//  uchar depth = type & CV_MAT_DEPTH_MASK;
+//  uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+//  switch ( depth ) {
+//    case CV_8U:  r = "8U"; break;
+//    case CV_8S:  r = "8S"; break;
+//    case CV_16U: r = "16U"; break;
+//    case CV_16S: r = "16S"; break;
+//    case CV_32S: r = "32S"; break;
+//    case CV_32F: r = "32F"; break;
+//    case CV_64F: r = "64F"; break;
+//    default:     r = "User"; break;
+//  }
+
+//  r += "C";
+//  r += (chans+'0');
+
+//  return r;
+//}
 
 QRect PreProcess::getBoundingRect() const
 {
@@ -177,6 +225,7 @@ PIX *PreProcess::makeGray(PIX *pixs)
         debugMsg("makeGray: failed!");
         return nullptr;
     }
+    debugImg("gray.png", pixGray);
 
     return pixGray;
 }
@@ -248,8 +297,6 @@ PIX *PreProcess::binarize(PIX *pixs)
     }
 #endif
 
-    debugImg("binarize.png", binarize_pixs);
-
     return binarize_pixs;
 }
 
@@ -257,19 +304,20 @@ PIX *PreProcess::binarize(PIX *pixs)
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
 PIX *PreProcess::scaleUnsharpBinarize(PIX *pixs)
 {
-    PIX *scaled_pixs = nullptr;
+//    PIX *scaled_pixs = nullptr;
     PIX *unsharp_pixs = nullptr;
     PIX *binarize_pixs = nullptr;
 
-    scaled_pixs = scale(pixs);
+//    scaled_pixs = scale(pixs);
 
-    if (scaled_pixs == nullptr)
-    {
-        return nullptr;
-    }
+//    if (scaled_pixs == nullptr)
+//    {
+//        return nullptr;
+//    }
 
-    unsharp_pixs = unsharpMask(scaled_pixs);
-    pixDestroy(&scaled_pixs);
+    unsharp_pixs = unsharpMask(pixs);
+//    unsharp_pixs = unsharpMask(scaled_pixs);
+//    pixDestroy(&scaled_pixs);
 
     if (unsharp_pixs == nullptr)
     {
@@ -284,30 +332,68 @@ PIX *PreProcess::scaleUnsharpBinarize(PIX *pixs)
         return nullptr;
     }
 
+    debugImg("binarize.png", binarize_pixs);
+
     return binarize_pixs;
 }
 
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
+//PIX *PreProcess::deskew(PIX *pixs)
+//{
+//#if 0
+//    l_float32 angle;
+//    l_float32 conf;
+//    PIX *pixDeskew = pixFindSkewAndDeskew(pixs, 0, &angle, &conf);
+//    qDebug() << "Angle: " << angle << " Conf: " << conf;
+//#else
+//    PIX *pixDeskew = pixFindSkewAndDeskew(pixs, 0, nullptr, nullptr);
+//#endif
+
+//    if (pixDeskew == nullptr)
+//    {
+//        debugMsg("deskew: failed!");
+//        return nullptr;
+//    }
+
+//    debugImg("deskew.png", pixDeskew);
+
+//    return pixDeskew;
+//}
+
 PIX *PreProcess::deskew(PIX *pixs)
 {
-#if 0
-    l_float32 angle;
-    l_float32 conf;
-    PIX *pixDeskew = pixFindSkewAndDeskew(pixs, 0, &angle, &conf);
-    qDebug() << "Angle: " << angle << " Conf: " << conf;
-#else
-    PIX *pixDeskew = pixFindSkewAndDeskew(pixs, 0, nullptr, nullptr);
-#endif
+    cv::Mat img = pix8ToMat(pixConvert1To8(NULL, pixs, 255, 0));
+    cv::threshold(img, img, 225, 255, cv::THRESH_BINARY);
+    cv::bitwise_not(img, img);
 
-    if (pixDeskew == nullptr)
-    {
-        debugMsg("deskew: failed!");
-        return nullptr;
+    std::vector<std::vector<cv::Point>> contours;
+    findContours(img, contours, cv::RETR_TREE,cv::CHAIN_APPROX_SIMPLE);
+
+    // Invert colors
+    std::vector<cv::Point> points;
+    cv::Mat_<uchar>::iterator it = img.begin<uchar>();
+    cv::Mat_<uchar>::iterator end = img.end<uchar>();
+    for (; it != end; ++it)
+      if (*it)
+        points.push_back(it.pos());
+    cv::RotatedRect box = minAreaRect(cv::Mat(points));
+    double angle = box.angle;
+    if (angle < -45.)
+      angle += 90.;
+
+    if (abs(angle) > 5) {
+        qDebug() << "angle" << angle;
+        cv::Mat rot_mat = cv::getRotationMatrix2D(box.center, angle, 1);
+        cv::Mat rotated;
+        cv::warpAffine(img, rotated, rot_mat, img.size(), cv::INTER_CUBIC);
+        cv::bitwise_not(rotated, rotated);
+
+        PIX* pixDeskew = binarize(mat8ToPix(&rotated));
+        debugImg("deskew.png", pixDeskew);
+        return pixDeskew;
     }
-
-    debugImg("deskew.png", pixDeskew);
-
-    return pixDeskew;
+    debugImg("deskew.png", pixs);
+    return pixClone(pixs);
 }
 
 // pixs must be 1 bpp.
@@ -335,7 +421,8 @@ PIX *PreProcess::addBorder(PIX *pixs)
 PIX *PreProcess::removeNoise(PIX *pixs)
 {
     //int minBlobSize = (int)(1.86 * scaleFactor);
-    int minBlobSize = 3;
+//    int minBlobSize = 3;
+    int minBlobSize = 6;
 
     // Remove noise if both dimensions are less than minBlobSize (yes, L_SELECT_IF_EITHER is correct here).
     PIX *denoisePixs1 = pixSelectBySize(pixs, minBlobSize, minBlobSize, 8,
@@ -347,7 +434,8 @@ PIX *PreProcess::removeNoise(PIX *pixs)
         return nullptr;
     }
 
-    debugImg("denoisePixs1.png", denoisePixs1);
+    debugImg("denoisePixs.png", denoisePixs1);
+//    debugImg("denoisePixs1.png", denoisePixs1);
 
     return denoisePixs1;
 
@@ -374,7 +462,7 @@ PIX *PreProcess::removeNoise(PIX *pixs)
 // pixs must be 1 bpp.
 PIX *PreProcess::eraseFurigana(PIX *pixs)
 {
-    PIX *denoisePixs = nullptr;
+//    PIX *denoisePixs = nullptr;
     bool status = true;
 
     if(removeFurigana)
@@ -391,7 +479,7 @@ PIX *PreProcess::eraseFurigana(PIX *pixs)
         if(status)
         {
             debugImg("eraseFurigana.png", pixs);
-            denoisePixs = removeNoise(pixs);
+//            denoisePixs = removeNoise(pixs);
         }
         else
         {
@@ -399,13 +487,15 @@ PIX *PreProcess::eraseFurigana(PIX *pixs)
             return nullptr;
         }
     }
-    else
-    {
-        denoisePixs = pixClone(pixs);
-    }
+//    else
+//    {
+//        denoisePixs = pixClone(pixs);
+//    }
+    return pixClone(pixs);
 
-    return denoisePixs;
+//    return denoisePixs;
 }
+
 
 // Standard pre-process for OCR.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
@@ -420,6 +510,8 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
     }
 
     debugImgCount = 0;
+
+    debugImg("original.png", pixs);
 
     // Convert to grayscale
     PIX *pixGray = makeGray(pixs);
@@ -471,22 +563,30 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
         return nullptr;
     }
 
+    PIX *denoisePixs = removeNoise(pixBinarize);
+    pixDestroy(&pixBinarize);
+
+    if (denoisePixs == nullptr)
+    {
+        return nullptr;
+    }
+
     // Deskew
     if(performDeskew)
     {
-        PIX *pixDeskew = deskew(pixBinarize);
+        PIX *pixDeskew = deskew(denoisePixs);
 
         // Deskew isn't critical, ignore on failure
         if (pixDeskew != nullptr)
         {
-          pixDestroy(&pixBinarize);
-          pixBinarize = pixDeskew;
+          pixDestroy(&denoisePixs);
+          denoisePixs = pixDeskew;
         }
     }
 
     // Erase furigana
-    PIX *furiganaPixs = eraseFurigana(pixBinarize);
-    pixDestroy(&pixBinarize);
+    PIX *furiganaPixs = eraseFurigana(denoisePixs);
+    pixDestroy(&denoisePixs);
 
     if (furiganaPixs == nullptr)
     {
@@ -506,7 +606,6 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
             debugMsg("pixClipToForeground failed!");
             return nullptr;
         }
-
         // Add border
         PIX *borderPixs = addBorder(foregroundPixs);
         pixDestroy(&foregroundPixs);
@@ -515,11 +614,9 @@ PIX *PreProcess::processImage(PIX *pixs, bool performDeskew, bool trim)
         {
             return nullptr;
         }
-
         setDPI(borderPixs);
         return borderPixs;
     }
-
     setDPI(furiganaPixs);
     return furiganaPixs;
 }
@@ -532,6 +629,8 @@ PIX *PreProcess::extractTextBlock(PIX *pixs, int pt_x, int pt_y, int lookahead, 
     debugImgCount = 0;
     int status = LEPT_ERROR;
 
+    debugImg("original.png", pixs);
+
     // Convert to grayscale
     PIX *pixGray = makeGray(pixs);
 
@@ -543,7 +642,7 @@ PIX *PreProcess::extractTextBlock(PIX *pixs, int pt_x, int pt_y, int lookahead, 
     // Binarize for negate determination
     PIX *binarizeForNegPixs = binarize(pixGray);
 
-    debugImg("binarizeForNegPixs.png", binarizeForNegPixs);
+//    debugImg("binarizeForNegPixs.png", binarizeForNegPixs);
 
     if (binarizeForNegPixs == nullptr)
     {
@@ -696,6 +795,8 @@ PIX *PreProcess::extractBubbleText(PIX *pixs, int pt_x, int pt_y)
     debugImgCount = 0;
     l_int32 status = LEPT_ERROR;
 
+    debugImg("original.png", pixs);
+
     pt_x = (int)(pt_x * scaleFactor);
     pt_y = (int)(pt_y * scaleFactor);
 
@@ -756,7 +857,8 @@ PIX *PreProcess::extractBubbleText(PIX *pixs, int pt_x, int pt_y)
     }
 
     // Dilate to thicken lines and connect small gaps in the bubble
-    int thickenAmount = (int)(2 * scaleFactor);
+//    int thickenAmount = (int)(2 * scaleFactor);
+    int thickenAmount = (int)(4 * scaleFactor);
     PIX *thickenLinesPixs = pixDilateBrick(nullptr, binarizePixs, thickenAmount, thickenAmount);
 
     if (thickenLinesPixs == nullptr)
@@ -778,7 +880,8 @@ PIX *PreProcess::extractBubbleText(PIX *pixs, int pt_x, int pt_y)
     }
 
     // Seed fill
-    PIX *seedFillPixs = pixSeedfillBinary(nullptr, seedStartPixs, binarizeNegPixs, 8);
+//    PIX *seedFillPixs = pixSeedfillBinary(nullptr, seedStartPixs, binarizeNegPixs, 8);
+    PIX *seedFillPixs = pixSeedfillBinary(nullptr, seedStartPixs, binarizeNegPixs, 4);
     pixDestroy(&seedStartPixs);
     pixDestroy(&binarizeNegPixs);
 
@@ -802,7 +905,8 @@ PIX *PreProcess::extractBubbleText(PIX *pixs, int pt_x, int pt_y)
     debugImg("seedFillPixs_Neg.png", seedFillPixs);
 
     // Remove foreground pixels touching the border
-    PIX *noBorderPixs = pixRemoveBorderConnComps(seedFillPixs, 8);
+//    PIX *noBorderPixs = pixRemoveBorderConnComps(seedFillPixs, 8);
+    PIX *noBorderPixs = pixRemoveBorderConnComps(seedFillPixs, 4);
     pixDestroy(&seedFillPixs);
 
     if (noBorderPixs == nullptr)
@@ -832,6 +936,15 @@ PIX *PreProcess::extractBubbleText(PIX *pixs, int pt_x, int pt_y)
     if (denoisePixs == nullptr)
     {
         return nullptr;
+    }
+
+    PIX *pixDeskew = deskew(denoisePixs);
+
+    // Deskew isn't critical, ignore on failure
+    if (pixDeskew != nullptr)
+    {
+      pixDestroy(&denoisePixs);
+      denoisePixs = pixDeskew;
     }
 
     // Erase furigana

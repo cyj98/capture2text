@@ -38,7 +38,8 @@ along with Capture2Text.  If not, see <http://www.gnu.org/licenses/>.
 #include "Translate.h"
 #include "WelcomeDialog.h"
 
-class MainWindow : public QWidget
+//class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 

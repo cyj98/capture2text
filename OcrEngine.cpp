@@ -41,12 +41,7 @@ OcrEngine::~OcrEngine()
 QStringList OcrEngine::getInstalledLangs()
 {
     QString exeDirpath = QCoreApplication::applicationDirPath();
-//#ifdef Q_OS_MACOS
-//    QDir dir("/usr/local/Cellar/tesseract/4.0.0/share/tessdata");
-//#endif
-//#ifdef Q_OS_WIN
     QDir dir(exeDirpath + QDir::separator() + "tessdata");
-//#endif
     QStringList nameFilter("*.traineddata");
     QStringList langFiles = dir.entryList(nameFilter);
     QStringList nameList;
@@ -76,12 +71,7 @@ bool OcrEngine::isLangInstalled(QString lang)
 bool OcrEngine::isLangCodeInstalled(QString langCode)
 {
     QString exeDirpath = QCoreApplication::applicationDirPath();
-//#ifdef Q_OS_WIN
     QDir dir(exeDirpath + QDir::separator() + "tessdata");
-//#endif
-//#ifdef Q_OS_MACOS
-//    QDir dir("/usr/local/Cellar/tesseract/4.0.0/share/tessdata");
-//#endif
     QStringList nameFilter("*.traineddata");
     QStringList langFiles = dir.entryList(nameFilter);
 
